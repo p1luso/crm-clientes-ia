@@ -7,12 +7,5 @@
     "src/app/api/**/*.ts": {
       "runtime": "nodejs18.x"
     }
-  },
-  "env": {
-    "NEXT_PUBLIC_CONVEX_URL": "@convex_url",
-    "CONVEX_DEPLOYMENT": "@convex_deployment",
-    "QSTASH_TOKEN": "@qstash_token",
-    "QSTASH_CURRENT_SIGNING_KEY": "@qstash_signing_key",
-    "QSTASH_NEXT_SIGNING_KEY": "@qstash_next_signing_key"
   }
 }
