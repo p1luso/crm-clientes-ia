@@ -1,7 +1,28 @@
 {
   "name": "crm-clientes-ia",
-  "version": "0.1.0",
+  "version": "1.0.0",
+  "description": "Sistema de gestión de clientes con inteligencia artificial",
+  "author": "Tu Nombre <tu-email@ejemplo.com>",
+  "license": "MIT",
   "private": true,
+  "keywords": [
+    "crm",
+    "clientes",
+    "ia",
+    "nextjs",
+    "convex",
+    "qstash",
+    "typescript",
+    "react"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tu-usuario/crm-clientes-ia.git"
+  },
+  "bugs": {
+    "url": "https://github.com/tu-usuario/crm-clientes-ia/issues"
+  },
+  "homepage": "https://github.com/tu-usuario/crm-clientes-ia#readme",
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
