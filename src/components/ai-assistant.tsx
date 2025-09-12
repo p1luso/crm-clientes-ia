@@ -85,16 +85,31 @@ export function AIAssistant() {
                   <div className="text-center p-3 bg-green-50 rounded-lg">
                     <div className="text-2xl font-bold text-green-600">{portfolioSummary.activeClients}</div>
                     <div className="text-sm text-green-800">Activos</div>
+                    <div className="text-xs text-green-700">Estado: Activo</div>
                   </div>
-                  <div className="text-center p-3 bg-orange-50 rounded-lg">
-                    <div className="text-2xl font-bold text-orange-600">{portfolioSummary.clientsNeedingAttention}</div>
-                    <div className="text-sm text-orange-800">Necesitan Atención</div>
+                  <div className="text-center p-3 bg-red-50 rounded-lg">
+                    <div className="text-2xl font-bold text-red-600">{portfolioSummary.inactiveClients}</div>
+                    <div className="text-sm text-red-800">Inactivos</div>
+                    <div className="text-xs text-red-700">Estado: Inactivo</div>
                   </div>
                   <div className="text-center p-3 bg-yellow-50 rounded-lg">
                     <div className="text-2xl font-bold text-yellow-600">{portfolioSummary.potentialClients}</div>
                     <div className="text-sm text-yellow-800">Potenciales</div>
+                    <div className="text-xs text-yellow-700">Estado: Potencial</div>
                   </div>
                 </div>
+                
+                {portfolioSummary.clientsNeedingAttention > 0 && (
+                  <div className="p-3 bg-orange-50 rounded-lg mb-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="text-xl font-bold text-orange-600">{portfolioSummary.clientsNeedingAttention}</div>
+                      <span className="text-sm text-orange-800">Clientes Necesitan Atención</span>
+                    </div>
+                    <p className="text-xs text-orange-700">
+                      Clientes sin interacción en los últimos 30 días (independiente de su estado)
+                    </p>
+                  </div>
+                )}
                 
                 <div className="space-y-2">
                   <h4 className="font-medium">Recomendaciones Inteligentes:</h4>
@@ -127,32 +142,41 @@ export function AIAssistant() {
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
                   <div className="text-center p-3 bg-green-50 rounded-lg">
                     <div className="text-xl font-bold text-green-600">{activityReport.activeLast7Days}</div>
-                    <div className="text-sm text-green-800">Activos (7 días)</div>
+                    <div className="text-sm text-green-800">Con Actividad (7 días)</div>
+                    <div className="text-xs text-green-700">Última interacción reciente</div>
                   </div>
                   <div className="text-center p-3 bg-blue-50 rounded-lg">
                     <div className="text-xl font-bold text-blue-600">{activityReport.activeLast30Days}</div>
-                    <div className="text-sm text-blue-800">Activos (30 días)</div>
+                    <div className="text-sm text-blue-800">Con Actividad (30 días)</div>
+                    <div className="text-xs text-blue-700">Última interacción este mes</div>
                   </div>
                   <div className="text-center p-3 bg-red-50 rounded-lg">
                     <div className="text-xl font-bold text-red-600">{activityReport.inactiveOver30Days}</div>
-                    <div className="text-sm text-red-800">Inactivos (30+ días)</div>
+                    <div className="text-sm text-red-800">Sin Actividad (30+ días)</div>
+                    <div className="text-xs text-red-700">Requieren seguimiento</div>
                   </div>
                 </div>
 
                 <div className="space-y-3">
                   <div>
-                    <h4 className="font-medium mb-2">Distribución por Estado:</h4>
-                    <div className="flex gap-2">
-                      <Badge className="bg-green-100 text-green-800">
-                        Activos: {activityReport.statusBreakdown.activos}
-                      </Badge>
-                      <Badge className="bg-red-100 text-red-800">
-                        Inactivos: {activityReport.statusBreakdown.inactivos}
-                      </Badge>
-                      <Badge className="bg-yellow-100 text-yellow-800">
-                        Potenciales: {activityReport.statusBreakdown.potenciales}
-                      </Badge>
+                    <h4 className="font-medium mb-2">Distribución por Estado Asignado:</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                      <div className="text-center p-2 bg-green-50 rounded">
+                        <div className="text-lg font-bold text-green-600">{activityReport.statusBreakdown.activos}</div>
+                        <div className="text-xs text-green-800">Estado: Activo</div>
+                      </div>
+                      <div className="text-center p-2 bg-red-50 rounded">
+                        <div className="text-lg font-bold text-red-600">{activityReport.statusBreakdown.inactivos}</div>
+                        <div className="text-xs text-red-800">Estado: Inactivo</div>
+                      </div>
+                      <div className="text-center p-2 bg-yellow-50 rounded">
+                        <div className="text-lg font-bold text-yellow-600">{activityReport.statusBreakdown.potenciales}</div>
+                        <div className="text-xs text-yellow-800">Estado: Potencial</div>
+                      </div>
                     </div>
+                    <p className="text-xs text-gray-600 mt-2 text-center">
+                      Los estados se asignan manualmente o mediante automatización IA
+                    </p>
                   </div>
 
                   {activityReport.inactiveOver30Days > 0 && (
@@ -161,9 +185,11 @@ export function AIAssistant() {
                         <AlertTriangle className="h-4 w-4 text-orange-600" />
                         <span className="font-medium text-orange-800">Atención Requerida</span>
                       </div>
-                      <p className="text-sm text-orange-700">
-                        Tienes {activityReport.inactiveOver30Days} clientes sin actividad en más de 30 días.
-                        Considera contactarlos para reactivarlos.
+                      <p className="text-sm text-orange-700 mb-2">
+                        Tienes <strong>{activityReport.inactiveOver30Days} clientes</strong> sin actividad en más de 30 días.
+                      </p>
+                      <p className="text-xs text-orange-600">
+                        Estos clientes pueden estar en cualquier estado (Activo, Inactivo, Potencial) pero requieren seguimiento inmediato.
                       </p>
                     </div>
                   )}
@@ -266,3 +292,4 @@ export function AIAssistant() {
     </Dialog>
   );
 }
+

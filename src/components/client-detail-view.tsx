@@ -6,7 +6,7 @@ import { api } from "../../convex/_generated/api";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -89,7 +89,7 @@ export function ClientDetailView({ client, isOpen, onClose }: ClientDetailViewPr
   const formatDate = (timestamp: number) => {
     return new Date(timestamp).toLocaleDateString("es-ES", {
       year: "numeric",
-      month: "long",
+      month: "short",
       day: "numeric",
       hour: "2-digit",
       minute: "2-digit",
@@ -108,7 +108,43 @@ export function ClientDetailView({ client, isOpen, onClose }: ClientDetailViewPr
     return date.toLocaleDateString("es-ES");
   };
 
+  const validateEditForm = () => {
+    const errors: string[] = [];
+    
+    // Validar nombre
+    if (!editForm.name.trim()) {
+      errors.push("El nombre es requerido");
+    } else if (editForm.name.trim().length < 2) {
+      errors.push("El nombre debe tener al menos 2 caracteres");
+    }
+    
+    // Validar teléfono
+    if (!editForm.phone.trim()) {
+      errors.push("El número de teléfono es requerido");
+    } else {
+      // Validar formato de teléfono (números, espacios, guiones, paréntesis y +)
+      const phoneRegex = /^[\+]?[\d\s\-\(\)]+$/;
+      if (!phoneRegex.test(editForm.phone.trim())) {
+        errors.push("El número de teléfono contiene caracteres inválidos");
+      } else {
+        // Contar solo dígitos para validar longitud mínima
+        const digitsOnly = editForm.phone.replace(/\D/g, '');
+        if (digitsOnly.length < 7) {
+          errors.push("El número de teléfono debe tener al menos 7 dígitos");
+        }
+      }
+    }
+    
+    return errors;
+  };
+
   const handleUpdateClient = async () => {
+    const validationErrors = validateEditForm();
+    if (validationErrors.length > 0) {
+      validationErrors.forEach(error => toast.error(error));
+      return;
+    }
+
     try {
       await updateClient({
         id: client._id as any,
@@ -176,27 +212,27 @@ export function ClientDetailView({ client, isOpen, onClose }: ClientDetailViewPr
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <User className="h-5 w-5" />
-            {client.name}
+      <DialogContent className="max-w-6xl max-h-[95vh] overflow-y-auto w-[98vw] sm:w-[95vw] lg:w-full mx-2 sm:mx-4">
+        <DialogHeader className="space-y-2">
+          <DialogTitle className="flex items-center gap-2 text-lg sm:text-xl">
+            <User className="h-5 w-5 flex-shrink-0" />
+            <span className="break-words">{client.name}</span>
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-sm sm:text-base">
             Información detallada y gestión del cliente
           </DialogDescription>
         </DialogHeader>
 
         <Tabs defaultValue="info" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="info">Información</TabsTrigger>
-            <TabsTrigger value="interactions">Interacciones</TabsTrigger>
-            <TabsTrigger value="ai">Análisis IA</TabsTrigger>
-            <TabsTrigger value="actions">Acciones</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 gap-2 h-auto">
+            <TabsTrigger value="info" className="text-xs sm:text-sm py-2 px-3 h-auto">Información</TabsTrigger>
+            <TabsTrigger value="interactions" className="text-xs sm:text-sm py-2 px-3 h-auto">Interacciones</TabsTrigger>
+            <TabsTrigger value="ai" className="text-xs sm:text-sm py-2 px-3 h-auto">Análisis IA</TabsTrigger>
+            <TabsTrigger value="actions" className="text-xs sm:text-sm py-2 px-3 h-auto">Acciones</TabsTrigger>
           </TabsList>
 
           <TabsContent value="info" className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg">Información Básica</CardTitle>
@@ -259,8 +295,8 @@ export function ClientDetailView({ client, isOpen, onClose }: ClientDetailViewPr
                         </Badge>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-gray-500" />
-                        <span className="text-sm text-gray-600">
+                        <Clock className="h-4 w-4 text-gray-500 flex-shrink-0" />
+                        <span className="text-sm text-gray-600 break-words">
                           Última interacción: {formatRelativeDate(client.lastInteraction)}
                         </span>
                       </div>
@@ -287,13 +323,13 @@ export function ClientDetailView({ client, isOpen, onClose }: ClientDetailViewPr
                     <span className="text-gray-600">Total interacciones:</span>
                     <span className="font-medium">{client.interactions.length}</span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex justify-between items-start">
                     <span className="text-gray-600">Cliente desde:</span>
-                    <span className="font-medium">{formatDate(client.createdAt)}</span>
+                    <span className="font-medium text-right break-words">{formatDate(client.createdAt)}</span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex justify-between items-start">
                     <span className="text-gray-600">Última actualización:</span>
-                    <span className="font-medium">{formatDate(client.updatedAt)}</span>
+                    <span className="font-medium text-right break-words">{formatDate(client.updatedAt)}</span>
                   </div>
                 </CardContent>
               </Card>
@@ -334,11 +370,11 @@ export function ClientDetailView({ client, isOpen, onClose }: ClientDetailViewPr
                             {getInteractionIcon(interaction.type)}
                           </div>
                           <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
+                            <div className="flex items-center gap-2 mb-1 flex-wrap">
                               <span className="font-medium capitalize">
                                 {interaction.type}
                               </span>
-                              <span className="text-sm text-gray-500">
+                              <span className="text-sm text-gray-500 break-words">
                                 {formatDate(interaction.date)}
                               </span>
                             </div>
@@ -352,80 +388,84 @@ export function ClientDetailView({ client, isOpen, onClose }: ClientDetailViewPr
             )}
           </TabsContent>
 
-          <TabsContent value="ai" className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Card>
-                <CardHeader>
+          <TabsContent value="ai" className="space-y-6">
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+              <Card className="min-h-[450px]">
+                <CardHeader className="pb-4 px-6">
                   <CardTitle className="flex items-center gap-2">
                     <Brain className="h-5 w-5" />
                     Análisis de Cliente
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="pt-4 px-6">
                   {analyzeClient ? (
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                       <div>
                         <span className="text-sm font-medium">Estado:</span>
-                        <p className="text-sm text-gray-600">{analyzeClient.analysis}</p>
+                        <p className="text-sm text-gray-600 mt-1">{analyzeClient.analysis}</p>
                       </div>
                       <div>
                         <span className="text-sm font-medium">Prioridad:</span>
-                        <Badge className={
-                          analyzeClient.priority === "Alta" ? "bg-red-100 text-red-800" :
-                          analyzeClient.priority === "Media" ? "bg-yellow-100 text-yellow-800" :
-                          "bg-green-100 text-green-800"
-                        }>
-                          {analyzeClient.priority}
-                        </Badge>
+                        <div className="mt-1">
+                          <Badge className={
+                            analyzeClient.priority === "Alta" ? "bg-red-100 text-red-800" :
+                            analyzeClient.priority === "Media" ? "bg-yellow-100 text-yellow-800" :
+                            "bg-green-100 text-green-800"
+                          }>
+                            {analyzeClient.priority}
+                          </Badge>
+                        </div>
                       </div>
                       <div>
                         <span className="text-sm font-medium">Días sin contacto:</span>
-                        <p className="text-sm text-gray-600">{analyzeClient.daysSinceLastInteraction}</p>
+                        <p className="text-sm text-gray-600 mt-1">{analyzeClient.daysSinceLastInteraction}</p>
                       </div>
                       <div>
                         <span className="text-sm font-medium">Total interacciones:</span>
-                        <p className="text-sm text-gray-600">{analyzeClient.totalInteractions}</p>
+                        <p className="text-sm text-gray-600 mt-1">{analyzeClient.totalInteractions}</p>
                       </div>
-                      <div className="p-3 bg-blue-50 rounded-lg">
+                      <div className="p-4 bg-blue-50 rounded-lg">
                         <span className="text-sm font-medium text-blue-800">Recomendación:</span>
-                        <p className="text-sm text-blue-700 mt-1">{analyzeClient.suggestion}</p>
+                        <p className="text-sm text-blue-700 mt-2">{analyzeClient.suggestion}</p>
                       </div>
                     </div>
                   ) : (
-                    <div className="text-center py-4">
+                    <div className="text-center py-6">
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-                      <p className="text-sm text-gray-600 mt-2">Analizando cliente...</p>
+                      <p className="text-sm text-gray-600 mt-3">Analizando cliente...</p>
                     </div>
                   )}
                 </CardContent>
               </Card>
 
-              <Card>
-                <CardHeader>
+              <Card className="min-h-[450px]">
+                <CardHeader className="pb-4 px-6">
                   <CardTitle className="flex items-center gap-2">
                     <Zap className="h-5 w-5" />
                     Acciones IA
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3">
-                  <Button 
-                    onClick={handleCategorizeClient}
-                    className="w-full"
-                    variant="outline"
-                  >
-                    <Zap className="h-4 w-4 mr-2" />
-                    Categorizar Automáticamente
-                  </Button>
-                  <p className="text-xs text-gray-600">
-                    La IA analizará las interacciones y asignará el estado más apropiado.
-                  </p>
+                <CardContent className="pt-4 px-6">
+                  <div className="space-y-4">
+                    <Button 
+                      onClick={handleCategorizeClient}
+                      className="w-full h-12 text-base font-medium px-4 py-3"
+                      variant="outline"
+                    >
+                      <Zap className="h-5 w-5 mr-2" />
+                      Categorizar
+                    </Button>
+                    <p className="text-sm text-gray-600 leading-relaxed text-center px-2">
+                      La IA analizará las interacciones y asignará el estado más apropiado.
+                    </p>
+                  </div>
                 </CardContent>
               </Card>
             </div>
           </TabsContent>
 
           <TabsContent value="actions" className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <Card>
                 <CardHeader>
                   <CardTitle>Cambio Rápido de Estado</CardTitle>

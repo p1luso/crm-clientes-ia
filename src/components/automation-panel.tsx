@@ -17,7 +17,11 @@ import {
   AlertTriangle, 
   CheckCircle,
   Zap,
-  Calendar
+  Calendar,
+  Bell,
+  Brain,
+  RefreshCw,
+  Target
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -25,11 +29,14 @@ export function AutomationPanel() {
   const [isEnabled, setIsEnabled] = useState(false);
   const [daysThreshold, setDaysThreshold] = useState(30);
   const [isRunning, setIsRunning] = useState(false);
+  const [isRunningSmartCategorization, setIsRunningSmartCategorization] = useState(false);
 
   const markInactiveClients = useMutation(api.automation.markInactiveClients);
+  const smartCategorization = useMutation(api.automation.smartCategorization);
   const getClientsNeedingFollowUp = useQuery(api.automation.getClientsNeedingFollowUp, {
     daysThreshold: daysThreshold,
   });
+  const followUpReminders = useQuery(api.automation.generateFollowUpReminders);
   const activityReport = useQuery(api.automation.generateActivityReport);
 
   const handleRunAutomation = async () => {
@@ -51,6 +58,18 @@ export function AutomationPanel() {
       setIsEnabled(true);
     } catch (error) {
       toast.error("Error al programar la automatización");
+    }
+  };
+
+  const handleSmartCategorization = async () => {
+    setIsRunningSmartCategorization(true);
+    try {
+      const result = await smartCategorization({});
+      toast.success(result.message);
+    } catch (error) {
+      toast.error("Error al ejecutar la categorización inteligente");
+    } finally {
+      setIsRunningSmartCategorization(false);
     }
   };
 
@@ -134,7 +153,7 @@ export function AutomationPanel() {
               </div>
               <div className="text-center p-3 bg-orange-50 rounded-lg">
                 <div className="text-2xl font-bold text-orange-600">
-                  {getClientsNeedingFollowUp?.length || 0}
+                  {followUpReminders?.clientsNeedingFollowUp || 0}
                 </div>
                 <div className="text-sm text-orange-800">Necesitan Seguimiento</div>
               </div>
@@ -185,6 +204,99 @@ export function AutomationPanel() {
             </div>
           )}
 
+          {/* Recordatorios de Seguimiento */}
+          <div className="border-t pt-4">
+            <h4 className="font-medium mb-3 flex items-center gap-2">
+              <Bell className="h-4 w-4 text-blue-600" />
+              Recordatorios de Seguimiento Inteligente
+            </h4>
+            <div className="space-y-3">
+              <p className="text-sm text-gray-600">
+                Sistema inteligente que calcula automáticamente cuándo contactar a cada cliente
+                basado en su estado y patrones de interacción.
+              </p>
+              
+              {followUpReminders && followUpReminders.reminders.length > 0 && (
+                <div className="space-y-2 max-h-60 overflow-y-auto">
+                  {followUpReminders.reminders.slice(0, 5).map((reminder) => (
+                    <div key={reminder.clientId} className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                      <div className="flex-1">
+                        <div className="font-medium text-blue-900">{reminder.clientName}</div>
+                        <div className="text-sm text-blue-700">{reminder.clientPhone}</div>
+                        <div className="text-xs text-blue-600 mt-1">
+                          {reminder.bestTimeToContact}
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <Badge className={
+                          reminder.priority === "Alta" ? "bg-red-100 text-red-800" :
+                          reminder.priority === "Media" ? "bg-yellow-100 text-yellow-800" :
+                          "bg-green-100 text-green-800"
+                        }>
+                          {reminder.daysOverdue} días de retraso
+                        </Badge>
+                        <div className="text-xs text-blue-600 mt-1">
+                          Estado: {reminder.clientStatus}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {followUpReminders.reminders.length > 5 && (
+                    <div className="text-center text-sm text-gray-500">
+                      Y {followUpReminders.reminders.length - 5} clientes más...
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Categorización Inteligente */}
+          <div className="border-t pt-4">
+            <h4 className="font-medium mb-3 flex items-center gap-2">
+              <Brain className="h-4 w-4 text-purple-600" />
+              Categorización Inteligente Automática
+            </h4>
+            <div className="space-y-3">
+              <p className="text-sm text-gray-600">
+                La IA analiza múltiples factores (frecuencia de interacciones, tiempo como cliente,
+                patrones de actividad) para sugerir automáticamente el estado más apropiado.
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="p-3 bg-purple-50 rounded-lg">
+                  <h5 className="font-medium text-purple-800 mb-2">Factores de Análisis</h5>
+                  <ul className="text-xs text-purple-700 space-y-1">
+                    <li>• Frecuencia de interacciones</li>
+                    <li>• Tiempo desde última interacción</li>
+                    <li>• Tiempo como cliente</li>
+                    <li>• Estado actual y patrones</li>
+                  </ul>
+                </div>
+                
+                <div className="p-3 bg-green-50 rounded-lg">
+                  <h5 className="font-medium text-green-800 mb-2">Beneficios</h5>
+                  <ul className="text-xs text-green-700 space-y-1">
+                    <li>• Categorización objetiva y consistente</li>
+                    <li>• Identificación automática de oportunidades</li>
+                    <li>• Optimización del tiempo de seguimiento</li>
+                    <li>• Mejor gestión de la cartera</li>
+                  </ul>
+                </div>
+              </div>
+              
+              <Button 
+                onClick={handleSmartCategorization}
+                disabled={isRunningSmartCategorization}
+                className="w-full"
+                variant="outline"
+              >
+                <RefreshCw className={`h-4 w-4 mr-2 ${isRunningSmartCategorization ? 'animate-spin' : ''}`} />
+                {isRunningSmartCategorization ? "Analizando..." : "Ejecutar Categorización Inteligente"}
+              </Button>
+            </div>
+          </div>
+
           {/* Información sobre Qstash */}
           <div className="border-t pt-4">
             <div className="p-4 bg-blue-50 rounded-lg">
@@ -199,7 +311,8 @@ export function AutomationPanel() {
               <ul className="text-xs text-blue-600 space-y-1">
                 <li>• Ejecución diaria automática a las 9:00 AM</li>
                 <li>• Marcación automática de clientes inactivos</li>
-                <li>• Notificaciones de clientes que necesitan seguimiento</li>
+                <li>• Recordatorios de seguimiento inteligente</li>
+                <li>• Categorización automática con IA</li>
                 <li>• Generación de reportes de actividad</li>
               </ul>
             </div>

@@ -71,14 +71,29 @@ export function Dashboard() {
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">CRM de Clientes</h1>
-              <p className="text-gray-600 mt-1">Gestiona tu cartera de clientes con inteligencia artificial</p>
+          <div className="py-6">
+            {/* Desktop Layout */}
+            <div className="hidden sm:flex justify-between items-center">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">CRM de Clientes</h1>
+                <p className="text-gray-600 mt-1">Gestiona tu cartera de clientes con inteligencia artificial</p>
+              </div>
+              <div className="flex gap-3">
+                <AIAssistant />
+                <AddClientDialog />
+              </div>
             </div>
-            <div className="flex gap-3">
-              <AIAssistant />
-              <AddClientDialog />
+            
+            {/* Mobile Layout */}
+            <div className="sm:hidden space-y-4">
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">CRM de Clientes</h1>
+                <p className="text-gray-600 mt-1 text-sm">Gestiona tu cartera de clientes con inteligencia artificial</p>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <AIAssistant />
+                <AddClientDialog />
+              </div>
             </div>
           </div>
         </div>
@@ -89,10 +104,10 @@ export function Dashboard() {
         <ConvexStatus />
         
         <Tabs defaultValue="dashboard" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-            <TabsTrigger value="clients">Clientes</TabsTrigger>
-            <TabsTrigger value="automation">Automatización</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-3 gap-1">
+            <TabsTrigger value="dashboard" className="text-xs sm:text-sm">Dashboard</TabsTrigger>
+            <TabsTrigger value="clients" className="text-xs sm:text-sm">Clientes</TabsTrigger>
+            <TabsTrigger value="automation" className="text-xs sm:text-sm">Automatización</TabsTrigger>
           </TabsList>
 
           <TabsContent value="dashboard" className="space-y-6">

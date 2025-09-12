@@ -21,11 +21,42 @@ export function AddClientDialog() {
 
   const createClient = useMutation(api.clients.createClient);
 
+  const validateForm = () => {
+    const errors: string[] = [];
+    
+    // Validar nombre
+    if (!formData.name.trim()) {
+      errors.push("El nombre es requerido");
+    } else if (formData.name.trim().length < 2) {
+      errors.push("El nombre debe tener al menos 2 caracteres");
+    }
+    
+    // Validar teléfono
+    if (!formData.phone.trim()) {
+      errors.push("El número de teléfono es requerido");
+    } else {
+      // Validar formato de teléfono (números, espacios, guiones, paréntesis y +)
+      const phoneRegex = /^[\+]?[\d\s\-\(\)]+$/;
+      if (!phoneRegex.test(formData.phone.trim())) {
+        errors.push("El número de teléfono contiene caracteres inválidos");
+      } else {
+        // Contar solo dígitos para validar longitud mínima
+        const digitsOnly = formData.phone.replace(/\D/g, '');
+        if (digitsOnly.length < 7) {
+          errors.push("El número de teléfono debe tener al menos 7 dígitos");
+        }
+      }
+    }
+    
+    return errors;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.name.trim() || !formData.phone.trim()) {
-      toast.error("Por favor completa todos los campos requeridos");
+    const validationErrors = validateForm();
+    if (validationErrors.length > 0) {
+      validationErrors.forEach(error => toast.error(error));
       return;
     }
 
